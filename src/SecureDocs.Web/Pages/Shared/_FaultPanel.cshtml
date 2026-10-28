@@ -1,0 +1,91 @@
+<button class="fault-fab" type="button" data-bs-toggle="offcanvas" data-bs-target="#faultPanel" aria-controls="faultPanel">
+    <span class="fab-dot" id="faultDot"></span> Fault Control
+</button>
+
+<div class="offcanvas offcanvas-end fault-panel" tabindex="-1" id="faultPanel" aria-labelledby="faultPanelLabel">
+    <div class="offcanvas-header">
+        <div>
+            <h5 class="offcanvas-title" id="faultPanelLabel">Fault Control</h5>
+            <div class="small muted">Inject problems, then find them in New Relic</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="faultApiError" class="alert alert-warning small d-none"></div>
+
+        <section class="fault-section">
+            <h6>Traffic</h6>
+            <div class="fault-row">
+                <div><strong>Auto traffic</strong><small>Simulated portal users, ~3 req/s</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="portal.autoTraffic"></div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary w-100" data-trigger="traffic">Send a burst of 30 requests</button>
+            <div class="small muted mt-1" id="pendingTraffic"></div>
+        </section>
+
+        <section class="fault-section">
+            <h6>Errors <span class="nr-tag">Errors Inbox</span></h6>
+            <div class="fault-row">
+                <div><strong>API error rate</strong><small>Ingestion, dashboard &amp; production throw</small></div>
+                <span class="fault-value" id="errorRateLabel">0%</span>
+            </div>
+            <input type="range" class="form-range" min="0" max="100" step="5" data-fault="api.errorRatePercent">
+            <div class="fault-row">
+                <div><strong>Database errors</strong><small>Query a table that doesn't exist</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="api.databaseErrors"></div>
+            </div>
+            <div class="fault-row">
+                <div><strong>Portal errors</strong><small>~50% of pages crash in the web tier</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="portal.portalErrors"></div>
+            </div>
+            <div class="fault-row">
+                <div><strong>QA camera mismatches</strong><small>~35% of printed pieces fail QA</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="api.qaMismatches"></div>
+            </div>
+            <div class="btn-grid">
+                <button class="btn btn-sm btn-outline-danger" data-trigger="exception">API exception</button>
+                <button class="btn btn-sm btn-outline-danger" data-trigger="db-error">SQL error</button>
+                <button class="btn btn-sm btn-outline-danger" data-trigger="portal-exception">Portal exception</button>
+            </div>
+        </section>
+
+        <section class="fault-section">
+            <h6>Business impact <span class="nr-tag">Business KPIs</span></h6>
+            <div class="fault-row">
+                <div><strong>Stall production floor</strong><small>Queue backs up: documents at risk, SLA misses</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="api.productionStalled"></div>
+            </div>
+            <div class="small muted">Demo SLAs: Enterprise 15 min, Standard 30 min. Items become "at risk" at half the SLA. Turn it off to see breached batches complete late.</div>
+            <button class="btn btn-sm btn-outline-secondary w-100 mt-2" data-trigger="clear-backlog">Clear production backlog (demo reset)</button>
+        </section>
+
+        <section class="fault-section">
+            <h6>Slow traces <span class="nr-tag">Distributed tracing</span></h6>
+            <div class="fault-row">
+                <div><strong>Slow address service</strong><small>Downstream call in the API stalls</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="api.slowTraces"></div>
+            </div>
+            <div class="fault-row sub"><small>Delay</small><span class="fault-value" id="slowTraceLabel">3000 ms</span></div>
+            <input type="range" class="form-range" min="500" max="10000" step="500" data-fault="api.slowTraceMs">
+            <button class="btn btn-sm btn-outline-warning w-100" data-trigger="slow-trace">Run one slow trace now</button>
+        </section>
+
+        <section class="fault-section">
+            <h6>Slow queries <span class="nr-tag">Database</span></h6>
+            <div class="fault-row">
+                <div><strong>Slow SQL</strong><small>Search, dashboard &amp; reports scan tables</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="api.slowQueries"></div>
+            </div>
+            <div class="fault-row sub"><small>Query time</small><span class="fault-value" id="slowQueryLabel">2500 ms</span></div>
+            <input type="range" class="form-range" min="500" max="10000" step="500" data-fault="api.slowQueryMs">
+            <div class="fault-row">
+                <div><strong>N+1 queries</strong><small>Batch detail: one query per document</small></div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" data-fault="api.nPlusOneQueries"></div>
+            </div>
+            <button class="btn btn-sm btn-outline-warning w-100" data-trigger="slow-query">Run one slow query now</button>
+        </section>
+
+        <button class="btn btn-sm btn-secondary w-100" id="faultReset">Reset all faults</button>
+        <div id="faultLog" class="fault-log"></div>
+    </div>
+</div>

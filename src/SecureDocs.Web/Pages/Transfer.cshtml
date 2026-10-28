@@ -1,0 +1,59 @@
+@page
+@model TransferModel
+@{ ViewData["Title"] = "Secure file transfer"; }
+<div class="page-head">
+    <div><h1>Secure file transfer</h1><p>Send member data files over FTPS/SFTP or upload them here. Files are picked up and ingested automatically.</p></div>
+    <a class="btn btn-outline-secondary" href="/Transfer?handler=SampleCsv">Download sample CSV</a>
+</div>
+<partial name="_Alerts" />
+<div class="grid-2">
+    <div class="panel">
+        <h2>Upload a file</h2>
+        <form method="post" asp-page-handler="Upload" enctype="multipart/form-data" class="mb-4">
+            <input class="form-control mb-2" type="file" name="Upload" accept=".csv,text/csv" />
+            <button class="btn btn-primary" type="submit">Transfer file</button>
+        </form>
+        <h2>Or generate a sample file</h2>
+        <form method="post" asp-page-handler="Sample" class="d-flex gap-2">
+            <input class="form-control" asp-for="SampleRows" type="number" min="1" max="2000" style="max-width:120px" />
+            <button class="btn btn-outline-primary" type="submit">Generate &amp; transfer</button>
+        </form>
+    </div>
+    <div class="panel">
+        <h2>FTP connection details</h2>
+        <table class="data">
+            <tr><td class="muted">Host</td><td><code>@Model.FtpHost</code></td></tr>
+            <tr><td class="muted">Protocol</td><td>FTPS (explicit TLS) port 21 / SFTP port 22</td></tr>
+            <tr><td class="muted">Drop folder</td><td><code>/inbound/@Model.ClientCode/</code></td></tr>
+            <tr><td class="muted">Format</td><td>CSV with header row (see sample)</td></tr>
+        </table>
+        <p class="small muted mt-3 mb-0">The ingestion service polls the drop folder, moves processed files to <code>/inbound/@Model.ClientCode/processed/</code>, and creates a batch for each file.</p>
+    </div>
+</div>
+<div class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="mb-0">Recent transfers</h2>
+        <a class="small" href="/Transfer">Refresh</a>
+    </div>
+    <div class="table-wrap">
+    <table class="data">
+        <thead><tr><th>#</th><th>File</th><th>Size</th><th>Origin</th><th>Uploaded</th><th>Records</th><th>Batch</th><th>Status</th></tr></thead>
+        <tbody>
+        @foreach (var t in Model.Transfers)
+        {
+            <tr>
+                <td>@t.Id</td>
+                <td>@t.FileName @if (t.Error is not null) { <div class="small text-danger">@t.Error</div> }</td>
+                <td>@((t.SizeBytes / 1024.0).ToString("0.0")) KB</td>
+                <td>@t.Origin</td>
+                <td>@Fmt.Local(t.UploadedUtc)</td>
+                <td>@t.RecordCount</td>
+                <td>@if (t.BatchId is not null) { <a href="/Batch?id=@t.BatchId">#@t.BatchId</a> }</td>
+                <td><span class="@Fmt.StatusBadge(t.Status)">@t.Status</span></td>
+            </tr>
+        }
+        @if (Model.Transfers.Count == 0) { <tr><td colspan="8" class="muted">No transfers yet.</td></tr> }
+        </tbody>
+    </table>
+    </div>
+</div>

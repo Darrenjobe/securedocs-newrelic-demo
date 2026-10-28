@@ -1,0 +1,9 @@
+@model PortalPageModel
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert-danger"><strong>We couldn't complete that request.</strong> @Model.ErrorMessage</div>
+}
+@if (Model.SuccessMessage is not null)
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}

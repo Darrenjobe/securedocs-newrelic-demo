@@ -1,0 +1,12 @@
+@model List<CountItem>
+@{ var max = Math.Max(1, Model.Count == 0 ? 1 : Model.Max(x => x.Count)); }
+<div class="bars">
+    @foreach (var item in Model)
+    {
+        <div class="bar-row">
+            <span>@item.Label</span>
+            <div class="track"><div class="fill" style="width:@(100.0 * item.Count / max)%"></div></div>
+            <span class="num">@item.Count.ToString("N0")</span>
+        </div>
+    }
+</div>

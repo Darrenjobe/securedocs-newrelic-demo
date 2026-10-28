@@ -1,0 +1,50 @@
+@page
+@model ProductionModel
+@{ ViewData["Title"] = "Production & QA"; }
+<div class="page-head">
+    <div><h1>Production &amp; QA</h1><p>Every piece is unique. QA cameras read each printed name and ZIP back and compare it to the source record.</p></div>
+    <form method="post" class="d-flex gap-2 align-items-center">
+        <input class="form-control" asp-for="Max" type="number" min="1" max="500" style="max-width:100px" />
+        <button class="btn btn-primary text-nowrap" type="submit">Run production now</button>
+    </form>
+</div>
+<partial name="_Alerts" />
+@{
+    var cams = Model.Inspections.GroupBy(i => i.CameraId).OrderBy(g => g.Key)
+        .Select(g => new CountItem($"{g.Key} ({100.0 * g.Count(i => i.Passed) / g.Count():0}% pass)", g.Count(i => !i.Passed))).ToList();
+}
+<div class="grid-3">
+    <div class="panel">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">Latest camera inspections</h2>
+            <div class="small">
+                <a href="/Production" class="@(Model.FailedOnly ? "" : "fw-bold")">All</a> ·
+                <a href="/Production?FailedOnly=true" class="@(Model.FailedOnly ? "fw-bold" : "")">Mismatches only</a>
+            </div>
+        </div>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Doc</th><th>Camera</th><th>Expected name</th><th>Camera read</th><th>ZIP</th><th>Result</th></tr></thead>
+            <tbody>
+            @foreach (var i in Model.Inspections.Take(60))
+            {
+                <tr>
+                    <td>#@i.DocumentId</td>
+                    <td>@i.CameraId</td>
+                    <td>@i.ExpectedName</td>
+                    <td class="@(i.ExpectedName != i.ScannedName ? "text-danger fw-semibold" : "")">@i.ScannedName</td>
+                    <td class="@(i.ExpectedPostal != i.ScannedPostal ? "text-danger fw-semibold" : "")">@i.ScannedPostal</td>
+                    <td><span class="@Fmt.StatusBadge(i.Passed ? "Pass" : "Fail")">@(i.Passed ? "Pass" : "Mismatch")</span></td>
+                </tr>
+            }
+            @if (Model.Inspections.Count == 0) { <tr><td colspan="6" class="muted">No inspections.</td></tr> }
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="panel">
+        <h2>Mismatches by camera</h2>
+        <partial name="_Bars" model="cams" />
+        <p class="small muted mb-0">Based on the latest 100 inspections.</p>
+    </div>
+</div>

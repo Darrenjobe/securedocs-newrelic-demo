@@ -1,0 +1,59 @@
+# New Relic Microsoft SQL Server integration (nri-mssql) for Azure SQL Database.
+# Rendered by scripts/deploy_sql_monitor.sh (placeholders __...__ are filled in) and mounted into the
+# infrastructure-bundle container at /etc/newrelic-infra/integrations.d/.
+#
+# Two instances, because on Azure SQL Database:
+#  - metrics open their own per-database connections (the integration adds database=<name> itself), so the
+#    connection must NOT carry a database= argument, while
+#  - query monitoring uses the main connection, which must point at the app database (Azure SQL isolates databases;
+#    connected to master it only sees master's own queries).
+integrations:
+  # 1) Instance + database metrics and inventory
+  - name: nri-mssql
+    env:
+      HOSTNAME: __SQL_SERVER__
+      PORT: 1433
+      USERNAME: newrelic
+      PASSWORD: __SQL_MONITOR_PASSWORD__
+      ENABLE_SSL: true
+      # Verify Azure SQL's TLS certificate against the image's CA bundle (.pem required by the driver).
+      TRUST_SERVER_CERTIFICATE: false
+      CERTIFICATE_LOCATION: /etc/ssl/cert.pem
+      TIMEOUT: 60
+      # Volume stats don't exist on Azure SQL Database (managed storage).
+      ENABLE_DISK_METRICS_IN_BYTES: false
+      ENABLE_BUFFER_METRICS: true
+      ENABLE_DATABASE_RESERVE_METRICS: true
+      ENABLE_QUERY_MONITORING: false
+    interval: 30s
+    labels:
+      app: securedocs
+      env: demo
+    inventory_source: config/mssql
+
+  # 2) Query performance monitoring on the app database (slow queries, waits, blocking, execution plans)
+  - name: nri-mssql
+    env:
+      HOSTNAME: __SQL_SERVER__
+      PORT: 1433
+      USERNAME: newrelic
+      PASSWORD: __SQL_MONITOR_PASSWORD__
+      ENABLE_SSL: true
+      TRUST_SERVER_CERTIFICATE: false
+      CERTIFICATE_LOCATION: /etc/ssl/cert.pem
+      EXTRA_CONNECTION_URL_ARGS: database=SecureDocs
+      # Inventory-only mode skips metrics here (instance 1 reports them); query monitoring still runs.
+      INVENTORY: true
+      # Plan collection shreds plan XML and can take a while on a busy database.
+      TIMEOUT: 120
+      ENABLE_QUERY_MONITORING: true
+      QUERY_MONITORING_RESPONSE_TIME_THRESHOLD: 500
+      QUERY_MONITORING_COUNT_THRESHOLD: 20
+      # Plans are collected for slow queries that ran within 2 x this interval.
+      QUERY_MONITORING_FETCH_INTERVAL: 60
+    interval: 60s
+    timeout: 180s
+    labels:
+      app: securedocs
+      env: demo
+    inventory_source: config/mssql-query-monitoring

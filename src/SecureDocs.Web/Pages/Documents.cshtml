@@ -1,0 +1,18 @@
+@page
+@model DocumentsModel
+@{ ViewData["Title"] = "Document search"; }
+<div class="page-head">
+    <div><h1>Document search</h1><p>Find a document by recipient name or exact member ID. Member IDs are masked.</p></div>
+</div>
+<form method="get" class="panel d-flex gap-2">
+    <input class="form-control" name="q" value="@Model.Q" placeholder="e.g. Garcia or M12345678" minlength="2" />
+    <button class="btn btn-primary px-4" type="submit">Search</button>
+</form>
+<partial name="_Alerts" />
+@if (Model.Results is not null)
+{
+    <div class="panel">
+        <h2>@Model.Results.Count result(s) <span class="muted small fw-normal">in @Model.ElapsedMs ms</span></h2>
+        <partial name="_DocumentTable" model="Model.Results" />
+    </div>
+}

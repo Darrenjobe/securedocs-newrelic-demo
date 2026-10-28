@@ -1,0 +1,53 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Dashboard"; var d = Model.Dashboard; }
+<div class="page-head">
+    <div>
+        <h1>Dashboard</h1>
+        <p>Data received, documents in production and QA results for your organization.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="/Transfer">Transfer a file</a>
+        <a class="btn btn-primary" href="/Submit">Submit data</a>
+    </div>
+</div>
+<partial name="_Alerts" />
+@if (d is not null)
+{
+    <div class="kpis">
+        <div class="kpi"><div class="label">Documents</div><div class="value">@d.TotalDocuments.ToString("N0")</div><div class="hint">across @d.TotalBatches batches</div></div>
+        <div class="kpi"><div class="label">Last 24 hours</div><div class="value">@d.DocumentsLast24h.ToString("N0")</div><div class="hint">documents received</div></div>
+        <div class="kpi"><div class="label">In production queue</div><div class="value">@d.QueuedDocuments.ToString("N0")</div><div class="hint">waiting to compose / print</div></div>
+        <div class="kpi"><div class="label">QA pass rate</div><div class="value">@d.QaPassRate.ToString("0.0")%</div><div class="hint">@d.QaFailures.ToString("N0") mismatches of @d.QaInspections.ToString("N0") camera reads</div></div>
+    </div>
+
+    <div class="panel">
+        <h2>Production pipeline</h2>
+        <div class="pipeline">
+            <div class="stage"><div class="label">1 · Ingest</div><div class="value">@d.TotalBatches</div><div class="hint">batches via API, FTP, portal</div></div>
+            <div class="stage"><div class="label">2 · Queue</div><div class="value">@Model.Count(DocumentStatus.Queued)</div><div class="hint">validated &amp; address-verified</div></div>
+            <div class="stage"><div class="label">3 · Compose &amp; print</div><div class="value">@(Model.Count(DocumentStatus.QaPassed) + Model.Count(DocumentStatus.QaFailed))</div><div class="hint">unique pieces printed</div></div>
+            <div class="stage"><div class="label">4 · QA camera</div><div class="value">@Model.Count(DocumentStatus.QaFailed)</div><div class="hint">name/address mismatches</div></div>
+            <div class="stage"><div class="label">5 · Digital delivery</div><div class="value">@Model.Count(DocumentStatus.Delivered)</div><div class="hint">email &amp; SMS sent</div></div>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="panel">
+            <h2>Document mix</h2>
+            <partial name="_Bars" model="d.ByType" />
+        </div>
+        <div class="panel">
+            <h2>Delivery channel</h2>
+            <partial name="_Bars" model="d.ByChannel" />
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="mb-0">Recent batches</h2>
+            <a href="/Batches" class="small">View all</a>
+        </div>
+        <partial name="_BatchTable" model="d.RecentBatches" />
+    </div>
+}

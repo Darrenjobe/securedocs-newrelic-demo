@@ -1,0 +1,29 @@
+@page
+@model LoginModel
+@{ ViewData["Title"] = "Sign in"; }
+<div class="login-card">
+    <div class="brand">
+        <span class="brand-mark">SD</span>
+        <span><strong>SecureDocs</strong><small>Secure document portal</small></span>
+    </div>
+    <h1 class="h5 mb-1">Sign in to your organization</h1>
+    <p class="muted small mb-3">Demo sign-in — pick a client organization. All data is synthetic.</p>
+    @if (Model.ErrorMessage is not null)
+    {
+        <div class="alert alert-danger small">@Model.ErrorMessage</div>
+    }
+    <form method="post">
+        <label class="form-label small fw-semibold">Organization</label>
+        <select class="form-select mb-3" asp-for="SelectedClient">
+            @foreach (var c in Model.Clients)
+            {
+                <option value="@c.Code">@c.Name (@c.Code)</option>
+            }
+        </select>
+        <label class="form-label small fw-semibold">User name</label>
+        <input class="form-control mb-3" asp-for="UserName" />
+        <label class="form-label small fw-semibold">Password</label>
+        <input class="form-control mb-4" type="password" value="demo-password" disabled />
+        <button class="btn btn-primary w-100" type="submit">Sign in</button>
+    </form>
+</div>

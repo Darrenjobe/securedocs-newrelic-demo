@@ -1,0 +1,18 @@
+@page
+@model ReportsModel
+@{ ViewData["Title"] = "Reports"; var total = Math.Max(1, Model.Rows.Sum(r => r.Documents)); }
+<div class="page-head">
+    <div><h1>Volume report</h1><p>All-time document volume by type and delivery channel.</p></div>
+</div>
+<partial name="_Alerts" />
+<div class="panel">
+    <table class="data">
+        <thead><tr><th>Document type</th><th>Channel</th><th>Documents</th><th>Share</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.Rows)
+        {
+            <tr><td>@r.DocumentType</td><td>@r.Channel</td><td>@r.Documents.ToString("N0")</td><td>@((100.0 * r.Documents / total).ToString("0.0"))%</td></tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,18 @@
+@page
+@model BatchModel
+@{ ViewData["Title"] = "Batch"; var b = Model.Detail?.Batch; }
+<partial name="_Alerts" />
+@if (b is not null)
+{
+    <div class="page-head">
+        <div><h1>Batch #@b.Id</h1><p>@b.Reference · received @Fmt.Local(b.ReceivedUtc) via @b.Source</p></div>
+        <span class="@Fmt.StatusBadge(b.Status)">@b.Status</span>
+    </div>
+    <div class="kpis">
+        <div class="kpi"><div class="label">Documents</div><div class="value">@b.DocumentCount</div></div>
+        <div class="kpi"><div class="label">QA passed</div><div class="value">@Model.Detail!.Documents.Count(d => d.QaResult == "Pass")</div></div>
+        <div class="kpi"><div class="label">QA failed</div><div class="value">@Model.Detail!.Documents.Count(d => d.QaResult == "Fail")</div></div>
+        <div class="kpi"><div class="label">Completed</div><div class="value" style="font-size:18px">@(b.CompletedUtc is null ? "In progress" : Fmt.Local(b.CompletedUtc.Value))</div></div>
+    </div>
+    <div class="panel"><h2>Documents</h2><partial name="_DocumentTable" model="Model.Detail!.Documents" /></div>
+}

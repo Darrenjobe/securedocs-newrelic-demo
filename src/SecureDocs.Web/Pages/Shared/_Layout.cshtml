@@ -1,0 +1,84 @@
+﻿@using SecureDocs.Web.Services
+@{
+    var client = Context.Request.Cookies[PortalSession.ClientCookie];
+    var clientName = Context.Request.Cookies["sd_client_name"] ?? client;
+    var user = Context.Request.Cookies[PortalSession.UserCookie];
+    var path = Context.Request.Path.Value ?? "/";
+    string Active(string p) => (p == "/" ? path == "/" : path.StartsWith(p, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · SecureDocs</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+@if (string.IsNullOrEmpty(client))
+{
+    <main class="login-shell">@RenderBody()</main>
+}
+else
+{
+    <div class="shell">
+        <aside class="sidebar">
+            <a class="brand" href="/">
+                <span class="brand-mark">SD</span>
+                <span><strong>SecureDocs</strong><small>Secure document portal</small></span>
+            </a>
+            <nav>
+                <div class="nav-label">Overview</div>
+                <a class="@Active("/")" href="/">Dashboard</a>
+                <a class="@Active("/Batches")" href="/Batches">Batches</a>
+                <a class="@Active("/Documents")" href="/Documents">Document search</a>
+                <div class="nav-label">Send data</div>
+                <a class="@Active("/Submit")" href="/Submit">Submit via API</a>
+                <a class="@Active("/Transfer")" href="/Transfer">Secure file transfer</a>
+                <div class="nav-label">Operations</div>
+                <a class="@Active("/Production")" href="/Production">Production &amp; QA</a>
+                <a class="@Active("/Reports")" href="/Reports">Reports</a>
+                <a class="@Active("/Developers")" href="/Developers">Developer API</a>
+            </nav>
+            <div class="sidebar-foot">Demo application · synthetic data only</div>
+        </aside>
+        <div class="content">
+            <header class="topbar">
+                <div>
+                    <div class="eyebrow">Client</div>
+                    <div class="client-name">@clientName <span class="client-code">@client</span></div>
+                </div>
+                <div class="topbar-right">
+                    <span class="hipaa">HIPAA · PHI protected</span>
+                    <span class="user">@user</span>
+                    <a class="btn btn-sm btn-outline-secondary" href="/Login?handler=SignOut">Sign out</a>
+                </div>
+            </header>
+            <main class="page">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+}
+
+<partial name="_FaultPanel" />
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/fault-panel.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+@{ var nrUserId = PortalSession.UserId(Context); }
+@if (nrUserId is not null)
+{
+    <script>
+        // Identify the portal user to the New Relic browser agent (Errors Inbox "users impacted"); waits for the agent.
+        (function (id, tries) {
+            (function set() {
+                if (window.newrelic && typeof window.newrelic.setUserId === 'function') window.newrelic.setUserId(id);
+                else if (tries-- > 0) setTimeout(set, 200);
+            })();
+        })(@Json.Serialize(nrUserId), 50);
+    </script>
+}
+</body>
+</html>

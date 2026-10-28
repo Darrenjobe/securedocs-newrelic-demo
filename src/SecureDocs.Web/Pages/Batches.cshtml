@@ -1,0 +1,8 @@
+@page
+@model BatchesModel
+@{ ViewData["Title"] = "Batches"; }
+<div class="page-head">
+    <div><h1>Batches</h1><p>Every data submission your organization has sent, by API, FTP or this portal.</p></div>
+</div>
+<partial name="_Alerts" />
+<div class="panel"><partial name="_BatchTable" model="Model.Batches" /></div>

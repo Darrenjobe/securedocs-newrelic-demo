@@ -1,0 +1,18 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Something went wrong";
+}
+<div class="panel error-panel">
+    <h1>Something went wrong</h1>
+    <p class="muted">The portal hit an unexpected error while processing your request. The error has been reported to operations.</p>
+    @if (Model.ExceptionType is not null)
+    {
+        <div class="alert alert-danger"><strong>@Model.ExceptionType</strong>: @Model.ExceptionMessage</div>
+    }
+    @if (Model.RequestId is not null)
+    {
+        <p class="small muted">Request ID: <code>@Model.RequestId</code></p>
+    }
+    <a class="btn btn-primary" href="/">Back to dashboard</a>
+</div>

@@ -1,0 +1,37 @@
+@page
+@model DevelopersModel
+@{ ViewData["Title"] = "Developer API"; var key = Model.Client?.ApiKey ?? "YOUR_API_KEY"; var code = Model.ClientCode; }
+<div class="page-head">
+    <div><h1>Developer API</h1><p>Integrate your systems directly with SecureDocs. All requests use your organization's API key.</p></div>
+</div>
+<partial name="_Alerts" />
+<div class="panel">
+    <h2>Your credentials</h2>
+    <table class="data">
+        <tr><td class="muted">Base URL</td><td><code>@Model.ApiBase</code></td></tr>
+        <tr><td class="muted">Client code</td><td><code>@code</code></td></tr>
+        <tr><td class="muted">API key (header <code>X-Api-Key</code>)</td><td><code>@key</code></td></tr>
+    </table>
+</div>
+<div class="panel">
+    <h2>Endpoints</h2>
+    <table class="data">
+        <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>POST</td><td><code>/api/batches</code></td><td>Submit a batch of documents (JSON)</td></tr>
+            <tr><td>GET</td><td><code>/api/batches/{id}</code></td><td>Batch status and per-document QA results</td></tr>
+            <tr><td>POST</td><td><code>/api/ftp/upload</code></td><td>Upload a CSV file (multipart: clientCode, file)</td></tr>
+            <tr><td>GET</td><td><code>/api/clients/@code/dashboard</code></td><td>Summary metrics</td></tr>
+            <tr><td>GET</td><td><code>/api/clients/@code/documents/search?q=</code></td><td>Search documents</td></tr>
+            <tr><td>GET</td><td><code>/api/clients/@code/qa</code></td><td>Latest QA camera inspections</td></tr>
+            <tr><td>GET</td><td><code>/api/clients/@code/ftp-transfers</code></td><td>File transfer history</td></tr>
+        </tbody>
+    </table>
+</div>
+<div class="panel">
+    <h2>Upload a file with curl</h2>
+    <pre class="code">curl -X POST @Model.ApiBase/api/ftp/upload \
+  -H "X-Api-Key: @key" \
+  -F clientCode=@code \
+  -F file=@@members.csv</pre>
+</div>

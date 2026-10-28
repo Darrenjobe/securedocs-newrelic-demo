@@ -1,0 +1,23 @@
+@model List<BatchSummaryDto>
+<div class="table-wrap">
+<table class="data">
+    <thead><tr><th>Batch</th><th>Reference</th><th>Source</th><th>Documents</th><th>Received</th><th>Status</th></tr></thead>
+    <tbody>
+    @foreach (var b in Model)
+    {
+        <tr>
+            <td><a href="/Batch?id=@b.Id">#@b.Id</a></td>
+            <td>@b.Reference</td>
+            <td>@b.Source</td>
+            <td>@b.DocumentCount</td>
+            <td>@Fmt.Local(b.ReceivedUtc)</td>
+            <td><span class="@Fmt.StatusBadge(b.Status)">@b.Status</span></td>
+        </tr>
+    }
+    @if (Model.Count == 0)
+    {
+        <tr><td colspan="6" class="muted">No batches yet.</td></tr>
+    }
+    </tbody>
+</table>
+</div>

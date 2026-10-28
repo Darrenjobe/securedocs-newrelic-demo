@@ -1,0 +1,68 @@
+@page
+@model SubmitModel
+@{ ViewData["Title"] = "Submit via API"; }
+<div class="page-head">
+    <div><h1>Submit data via API</h1><p>Send a batch of member records for printing, email or SMS. This form calls the same REST API your systems use.</p></div>
+</div>
+<partial name="_Alerts" />
+<div class="grid-3">
+    <form method="post" class="panel">
+        <h2>New batch</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label small fw-semibold">Batch reference (optional)</label>
+                <input class="form-control" asp-for="Reference" placeholder="e.g. NOV-EOB-RUN-1" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-semibold">Number of records</label>
+                <input class="form-control" asp-for="Count" type="number" min="1" max="1000" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-semibold">Document type</label>
+                <select class="form-select" asp-for="DocumentType">
+                    <option>Mixed</option>
+                    @foreach (var t in DocumentTypes.All) { <option>@t</option> }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-semibold">Delivery channel</label>
+                <select class="form-select" asp-for="Channel">
+                    <option>Mixed</option>
+                    @foreach (var c in Channels.All) { <option>@c</option> }
+                </select>
+            </div>
+        </div>
+        <p class="small muted mt-3 mb-3">Records are generated with synthetic names, addresses and member IDs.</p>
+        <button class="btn btn-primary" type="submit">Generate &amp; submit batch</button>
+    </form>
+    <div class="panel">
+        <h2>What happens next</h2>
+        <ol class="small ps-3 mb-0">
+            <li>Records are validated against HIPAA field rules.</li>
+            <li>Mailing addresses are checked by the address verification service.</li>
+            <li>The batch is stored and queued for the production floor.</li>
+            <li>Each unique piece is composed, printed and read back by a QA camera.</li>
+        </ol>
+    </div>
+</div>
+@if (Model.Result is not null)
+{
+    <div class="panel">
+        <h2>Result</h2>
+        <p>Batch <a href="/Batch?id=@Model.Result.BatchId">#@Model.Result.BatchId</a> — @Model.Result.Accepted accepted, @Model.Result.Rejected rejected, status <span class="@Fmt.StatusBadge(Model.Result.Status)">@Model.Result.Status</span></p>
+        @foreach (var w in Model.Result.Warnings) { <div class="small text-warning-emphasis">@w</div> }
+    </div>
+}
+@if (Model.Client is not null)
+{
+    <div class="panel">
+        <h2>Equivalent API call</h2>
+        <pre class="code">curl -X POST {API_BASE_URL}/api/batches \
+  -H "X-Api-Key: @Model.Client.ApiKey" \
+  -H "Content-Type: application/json" \
+  -d '{ "clientCode": "@Model.Client.Code", "reference": "NOV-EOB-RUN-1",
+        "documents": [ { "documentType": "EOB", "channel": "Print", "recipientName": "Jane Doe",
+          "addressLine1": "100 Oak St", "city": "Oakland", "state": "CA", "postalCode": "94612",
+          "memberId": "M12345678", "amount": 125.40 } ] }'</pre>
+    </div>
+}

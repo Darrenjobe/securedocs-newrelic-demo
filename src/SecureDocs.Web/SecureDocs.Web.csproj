@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SecureDocs.Shared\SecureDocs.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NewRelic.Agent" Version="10.55.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- Overwrite the New Relic agent's default newrelic.config with the demo's shared one. -->
+  <Target Name="NewRelicConfigBuild" AfterTargets="Build">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../../newrelic/newrelic.config" DestinationFolder="$(OutDir)newrelic" />
+  </Target>
+  <Target Name="NewRelicConfigPublish" AfterTargets="Publish">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../../newrelic/newrelic.config" DestinationFolder="$(PublishDir)newrelic" />
+  </Target>
+
+</Project>

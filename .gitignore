@@ -1,0 +1,35 @@
+# Build output
+bin/
+obj/
+.deploy/
+dist/
+.package-cache/
+*.user
+.vs/
+.idea/
+
+# Local run data
+**/App_Data/
+*.db
+*.db-shm
+*.db-wal
+local/bin/
+local/data/
+local/logs/
+local/.build/
+
+# Generated per New Relic account (scripts/render_newrelic_files.sh <ACCOUNT_ID>)
+newrelic/dashboard-*.json
+pathpoint/*.json
+
+# Tooling
+node_modules/
+__pycache__/
+.DS_Store
+failure-*.png
+
+# Secrets: never commit these
+.env
+*.env
+deploy.env
+*-sp.json

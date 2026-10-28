@@ -1,0 +1,26 @@
+@model List<DocumentDto>
+<div class="table-wrap">
+<table class="data">
+    <thead><tr><th>Doc</th><th>Batch</th><th>Type</th><th>Channel</th><th>Recipient</th><th>Member</th><th>Location</th><th>Status</th><th>QA</th></tr></thead>
+    <tbody>
+    @foreach (var d in Model)
+    {
+        <tr>
+            <td>#@d.Id</td>
+            <td><a href="/Batch?id=@d.BatchId">#@d.BatchId</a></td>
+            <td>@d.DocumentType</td>
+            <td>@d.Channel</td>
+            <td>@d.RecipientName</td>
+            <td><code>@d.MaskedMemberId</code></td>
+            <td>@d.City, @d.State @d.PostalCode</td>
+            <td><span class="@Fmt.StatusBadge(d.Status)">@d.Status</span></td>
+            <td>@if (d.QaResult is not null) { <span class="@Fmt.StatusBadge(d.QaResult)">@d.QaResult</span> } else { <span class="muted">—</span> }</td>
+        </tr>
+    }
+    @if (Model.Count == 0)
+    {
+        <tr><td colspan="9" class="muted">No documents found.</td></tr>
+    }
+    </tbody>
+</table>
+</div>
