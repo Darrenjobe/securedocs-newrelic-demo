@@ -233,3 +233,7 @@ az group delete -n rg-securedocs-demo
 - **Custom attributes carry only codes, counts, types and totals**, never names, addresses or member IDs.
 - **The fault endpoints need a generated control key.** Even so, treat a deployed instance as public and
   short-lived.
+
+## License
+[MIT](LICENSE). Bundled third-party libraries (Bootstrap, jQuery, jQuery Validation) keep their own licenses
+in `src/SecureDocs.Web/wwwroot/lib/`.
