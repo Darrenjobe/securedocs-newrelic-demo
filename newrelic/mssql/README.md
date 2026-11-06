@@ -41,9 +41,13 @@ Query details shows a query's **execution plan**, and plans weren't being collec
    **Fix:** two integration instances in `mssql-config.yml.template`: one for metrics (default connection), one for
    query monitoring only (`INVENTORY: true` skips metrics) connected to `SecureDocs`.
 2. **The plan query timed out** after 30 s (`context deadline exceeded`): shredding plan XML is expensive on a busy S0
-   database. **Fix:** `TIMEOUT: 120` for the query-monitoring instance. Plans are only collected for slow queries
-   (> 500 ms average) that ran in the last 2 × `QUERY_MONITORING_FETCH_INTERVAL` (here 2 minutes).
-3. These errors are invisible at the default log level. Run `LOG_LEVEL=debug bash scripts/deploy_sql_monitor.sh`
+   database. **Fix:** `TIMEOUT: 120` for the query-monitoring instance.
+3. **No query was slow enough.** Plans are only collected for queries averaging more than
+   `QUERY_MONITORING_RESPONSE_TIME_THRESHOLD` that ran in the last 2 × `QUERY_MONITORING_FETCH_INTERVAL` (here 2
+   minutes). On a freshly deployed database the Slow SQL fault's table scans take only ~80–110 ms. Its `WAITFOR` delay
+   runs as a separate statement and isn't counted against the query, so a 500 ms threshold caught nothing.
+   **Fix:** threshold 50 ms. Normal app queries (~20 ms) still get no plans; the fault queries do.
+4. These errors are invisible at the default log level. Run `LOG_LEVEL=debug bash scripts/deploy_sql_monitor.sh`
    to see the integration's own messages.
 
 ## Dashboards

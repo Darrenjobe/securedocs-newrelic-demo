@@ -47,7 +47,9 @@ integrations:
       # Plan collection shreds plan XML and can take a while on a busy database.
       TIMEOUT: 120
       ENABLE_QUERY_MONITORING: true
-      QUERY_MONITORING_RESPONSE_TIME_THRESHOLD: 500
+      # Plans are only collected for queries averaging more than this (ms). Normal app queries take ~20 ms; the Slow
+      # SQL fault's table scans take ~80+ ms on a fresh database (its WAITFOR delay isn't counted against the query).
+      QUERY_MONITORING_RESPONSE_TIME_THRESHOLD: 50
       QUERY_MONITORING_COUNT_THRESHOLD: 20
       # Plans are collected for slow queries that ran within 2 x this interval.
       QUERY_MONITORING_FETCH_INTERVAL: 60
