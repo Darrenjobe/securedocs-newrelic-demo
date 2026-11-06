@@ -7,6 +7,21 @@ normal telemetry (traces, query plans, stack traces, business events), the same 
 Run **2–3 stories**, one at a time. Start each one from a business symptom and drill down to the line of code or the
 query.
 
+**Every switch also leaves a deployment marker.** Turning a switch on or off records a "release" on the affected app
+in New Relic (Change tracking), with a deliberately upbeat note. Turning **Slow SQL** on, for example, ships
+*"Optimized query: faster case-insensitive document search…"*, and turning it off ships *"Fixing query slowness…"*.
+The marker appears as a vertical line on the APM charts, right where the fault starts. That lets every story end
+the way real incidents often do: **"what changed?"** → the release that went out just before the spike. Open
+**APM → the app → Change tracking** (or click the marker on a chart) to show the release, then the impact analysis
+New Relic computes for it (errors, latency and throughput before and after).
+
+Each switch marks the app where its code lives:
+- **Portal errors:** SecureDocs-Portal.
+- **Every other switch:** SecureDocs-API.
+
+The one-off buttons don't record markers. Markers need the optional User API key app setting; see
+[Recreate in your environment](../README.md#recreate-in-your-environment).
+
 ---
 
 ## Before the demo (30–45 minutes ahead)
@@ -67,7 +82,11 @@ the last incident cost us."
      from using an index (plus a `WAITFOR` delay).
    - **Who is affected:** which clients and tiers, with trace IDs.
 
+5. **What changed:** a deployment marker sits right where the latency jumps: *"Optimized query…"*. The "optimization"
+   is the regression.
+
 **Root cause:** a non-sargable query scanning the table. **Fix:** rewrite the predicate or add a proper index.
+Turning the switch off ships *"Fixing query slowness"*, and the latency drops right at that second marker.
 
 **Say:** "The app and the database tell the same story in one place, so the DBA and the developer aren't arguing
 about whose problem it is."
@@ -85,6 +104,9 @@ about whose problem it is."
 3. **Open the error:** the stack trace leads to a "duplicate check" in `IngestionService` that queries
    `dbo.PrintJobArchive_2019`, a legacy table that **no longer exists** ("Invalid object name").
 4. **Distributed trace:** portal click → API → the failing SQL call.
+
+5. **What changed:** the error spike starts at the release *"Improved duplicate detection: check the print-job
+   archive before printing"*.
 
 **Root cause:** code still depends on a table that was dropped. **Fix:** remove the dependency or restore the table.
 

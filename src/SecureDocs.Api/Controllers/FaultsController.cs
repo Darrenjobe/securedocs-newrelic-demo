@@ -11,7 +11,7 @@ namespace SecureDocs.Api.Controllers;
 [ApiController]
 [Route("api/faults")]
 public class FaultsController(FaultState faults, SecureDocsDb db, SqlFaultQueries sqlFaults,
-    AddressVerificationClient addresses, IConfiguration config) : ControllerBase
+    AddressVerificationClient addresses, ChangeMarkers markers, IConfiguration config) : ControllerBase
 {
     /// <summary>If Faults:ControlKey is set, changing faults requires a matching X-Fault-Key header.</summary>
     bool Authorized() =>
@@ -24,7 +24,11 @@ public class FaultsController(FaultState faults, SecureDocsDb db, SqlFaultQuerie
     public ActionResult<ApiFaultState> Put([FromBody] ApiFaultState state)
     {
         if (!Authorized()) return Unauthorized();
+        var before = faults.Current;
         faults.Set(state);
+        // Each switch that changes gets a deployment marker on this app: on = the "release" that introduced the
+        // fault, off = the hotfix. Reset all faults comes through here too, so it records the fixes.
+        foreach (var (toggle, on) in ChangeMarkers.Changes(before, faults.Current)) markers.Record(toggle, on);
         return faults.Current;
     }
 

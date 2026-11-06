@@ -32,6 +32,11 @@ builder.Services.AddHttpClient<AddressVerificationClient>(c =>
 });
 
 builder.Services.AddSingleton<FaultState>();
+builder.Services.AddSingleton(sp =>
+{
+    var log = sp.GetRequiredService<ILoggerFactory>().CreateLogger("ChangeMarkers");
+    return ChangeMarkers.FromConfig(k => builder.Configuration[k], "SecureDocs-API", m => log.LogInformation("{Message}", m));
+});
 builder.Services.AddSingleton<FtpInbox>();
 builder.Services.AddScoped<SqlFaultQueries>();
 builder.Services.AddScoped<IngestionService>();

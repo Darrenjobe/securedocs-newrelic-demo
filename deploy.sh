@@ -6,6 +6,8 @@
 #   export NEW_RELIC_LICENSE_KEY=...        # New Relic ingest license key
 #   export SQL_ADMIN_PASSWORD='...'         # 8+ chars, upper/lower/digit/symbol
 #   ./deploy.sh        # optional: RG=... LOCATION=... SQL_LOCATION=... APP_SERVICE_SKU=... ./deploy.sh
+# Optional: NEW_RELIC_USER_KEY=NRAK-... and NEW_RELIC_ACCOUNT_ID=... turn on deployment markers for Fault Control
+# switches (each switch turned on records a "release" on the affected app in New Relic).
 set -euo pipefail
 
 RG="${RG:-rg-securedocs-demo}"
@@ -29,7 +31,8 @@ fi
 echo "==> Deploying infrastructure (App Service plan, 2 web apps, Azure SQL)..."
 DEPLOYMENT=securedocs-$(date +%Y%m%d%H%M%S)
 if ! az deployment group create -g "$RG" -n "$DEPLOYMENT" -f infra/main.bicep \
-  -p sqlAdminPassword="$SQL_ADMIN_PASSWORD" newRelicLicenseKey="$NEW_RELIC_LICENSE_KEY" appServiceSku="$SKU" location="$LOCATION" sqlLocation="$SQL_LOCATION" -o none; then
+  -p sqlAdminPassword="$SQL_ADMIN_PASSWORD" newRelicLicenseKey="$NEW_RELIC_LICENSE_KEY" appServiceSku="$SKU" location="$LOCATION" sqlLocation="$SQL_LOCATION" \
+     newRelicUserApiKey="${NEW_RELIC_USER_KEY:-}" newRelicAccountId="${NEW_RELIC_ACCOUNT_ID:-}" -o none; then
   echo
   echo "Infrastructure deployment failed. Common causes:"
   echo "  * 'Operation cannot be completed without additional quota ... (B1 VMs): 0'"

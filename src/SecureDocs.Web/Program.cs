@@ -8,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages().AddMvcOptions(o => o.Filters.Add<PortalFaultPageFilter>());
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<PortalFaults>();
+builder.Services.AddSingleton(sp =>
+{
+    var log = sp.GetRequiredService<ILoggerFactory>().CreateLogger("ChangeMarkers");
+    return ChangeMarkers.FromConfig(k => builder.Configuration[k], "SecureDocs-Portal", m => log.LogInformation("{Message}", m));
+});
 
 var apiBase = builder.Configuration["Api:BaseUrl"] ?? "http://localhost:5081";
 builder.Services.AddHttpContextAccessor();
@@ -65,17 +70,21 @@ fault.MapGet("/state", async (SecureDocsApi api, PortalFaults portal) =>
     return state;
 });
 
-fault.MapPost("/state", async (FaultPanelState body, SecureDocsApi api, PortalFaults portal) =>
+fault.MapPost("/state", async (FaultPanelState body, SecureDocsApi api, PortalFaults portal, ChangeMarkers markers) =>
 {
+    var portalErrorsWasOn = portal.Snapshot().PortalErrors;
     portal.Set(body.Portal);
+    // The portal marks its own app; the API marks itself for the API switches.
+    if (portalErrorsWasOn != body.Portal.PortalErrors) markers.Record("PortalErrors", body.Portal.PortalErrors);
     var state = new FaultPanelState { Portal = portal.Snapshot() };
     try { state.Api = await api.SetFaultsAsync(body.Api); }
     catch (Exception ex) { state.ApiError = ex.Message; }
     return state;
 });
 
-fault.MapPost("/reset", async (SecureDocsApi api, PortalFaults portal) =>
+fault.MapPost("/reset", async (SecureDocsApi api, PortalFaults portal, ChangeMarkers markers) =>
 {
+    if (portal.Snapshot().PortalErrors) markers.Record("PortalErrors", false);
     portal.Set(new PortalFaultState { AutoTraffic = portal.Snapshot().AutoTraffic });
     await api.SetFaultsAsync(new ApiFaultState());
     return Results.Ok();

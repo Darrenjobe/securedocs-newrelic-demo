@@ -135,6 +135,11 @@ On first start, the API creates the schema and seeds about 9,000 synthetic docum
 - **Turn on browser monitoring:** in New Relic, open **APM → SecureDocs-Portal → Browser** and enable it. The agent
   injects the browser script automatically (`browserMonitoring autoInstrument="true"` in
   [newrelic/newrelic.config](newrelic/newrelic.config)).
+- **Optional: deployment markers for Fault Control.** Also export `NEW_RELIC_USER_KEY=NRAK-...` and
+  `NEW_RELIC_ACCOUNT_ID=<ACCOUNT_ID>` before `./deploy.sh`. Every fault switch you turn on or off then records a
+  "release" on the affected app in New Relic. The notes are tongue-in-cheek: *"Optimized query…"* when the slow SQL
+  fault goes on, *"Fixing query slowness…"* when it goes off. That lets a demo end with "what changed?". The key is
+  stored as an app setting, so use a dedicated key and rotate it after the demo.
 - **Generate traffic:** open the portal, click **Fault Control** (bottom right) and turn on **Auto traffic**.
   APM, traces, errors and business events start arriving within a minute or two.
 
@@ -231,6 +236,8 @@ az group delete -n rg-securedocs-demo
 - **The agent config protects sensitive data.** It never sends SQL parameter values, cookies or auth headers, and SQL
   is obfuscated (see [newrelic/newrelic.config](newrelic/newrelic.config)).
 - **Custom attributes carry only codes, counts, types and totals**, never names, addresses or member IDs.
+- **The optional User API key for deployment markers** is the most powerful secret in the setup: it can call NerdGraph as
+  you. Leave it unset unless you want the markers, use a dedicated key, and delete it after the demo.
 - **The fault endpoints need a generated control key.** Even so, treat a deployed instance as public and
   short-lived.
 

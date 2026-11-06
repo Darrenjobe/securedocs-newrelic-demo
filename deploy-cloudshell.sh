@@ -105,7 +105,8 @@ echo "==> Deploying: web apps in $LOCATION ($SKU), Azure SQL in $SQL_LOCATION, r
 DEPLOYMENT="securedocs-$(date +%Y%m%d%H%M%S)"
 if ! az deployment group create -g "$RG" -n "$DEPLOYMENT" -f main.bicep \
   -p sqlAdminPassword="$SQL_ADMIN_PASSWORD" newRelicLicenseKey="$NEW_RELIC_LICENSE_KEY" \
-     appServiceSku="$SKU" location="$LOCATION" sqlLocation="$SQL_LOCATION" -o none; then
+     appServiceSku="$SKU" location="$LOCATION" sqlLocation="$SQL_LOCATION" \
+     newRelicUserApiKey="${NEW_RELIC_USER_KEY:-}" newRelicAccountId="${NEW_RELIC_ACCOUNT_ID:-}" -o none; then
   echo
   echo "Infrastructure deployment failed (see the error above). Common causes:"
   echo "  * '... is not accepting creation of new ... SQL Database servers' -> run again with SQL_LOCATION=<other region>"

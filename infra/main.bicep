@@ -28,6 +28,13 @@ param sqlAdminPassword string
 @description('New Relic ingest license key')
 param newRelicLicenseKey string
 
+@secure()
+@description('Optional New Relic User API key (NRAK-...). When set, turning on a Fault Control switch records a deployment marker on the affected app.')
+param newRelicUserApiKey string = ''
+
+@description('Optional New Relic account ID that owns the APM apps (used to find them for deployment markers)')
+param newRelicAccountId string = ''
+
 @description('Shared secret the portal sends to the API to change fault settings')
 @secure()
 param faultControlKey string = newGuid()
@@ -53,6 +60,9 @@ var newRelicSettings = [
   { name: 'NEW_RELIC_LICENSE_KEY', value: newRelicLicenseKey }
   { name: 'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED', value: 'true' }
   { name: 'NEW_RELIC_LABELS', value: 'environment:demo;owner:securedocs' }
+  // Deployment markers for Fault Control switches (off when the key is empty).
+  { name: 'NewRelic__UserApiKey', value: newRelicUserApiKey }
+  { name: 'NewRelic__AccountId', value: newRelicAccountId }
 ]
 
 resource plan 'Microsoft.Web/serverfarms@2023-12-01' = {

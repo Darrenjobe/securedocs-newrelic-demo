@@ -18,6 +18,7 @@ full observability. Use it to take your own app to the same level.
 | 8. Dashboards | Business KPIs, database health, slow query investigation | ~½ day | **None** |
 | 9. Pathpoint | 2 business-flow maps with KPIs, touchpoints and live status | ~2–3 hours | **None** |
 | 10. Service levels | 16 SLIs/SLOs for the apps, the database, synthetics and business KPIs | ~1–2 hours | **None** |
+| 11. Change tracking | Deployment markers on the APM charts, with before-and-after impact analysis | ~30 min | **None** in a real pipeline (one API call per deploy) |
 
 **The takeaway:** layers 1, 2 and 5 give you full technical coverage with **no code changes**. Only layers 3 and 4
 touch code, with small additive one-line calls; no existing logic was changed. Everything else is configuration
@@ -262,6 +263,32 @@ Each is a "good events / valid events" pair of NRQL filters, on data you already
 
 ---
 
+## 11. Change tracking: deployment markers (one API call per deploy)
+
+A deployment marker draws a line on every APM chart at the moment a release went out. New Relic then compares errors,
+latency and throughput before and after it, so "what changed?" takes seconds to answer.
+
+**For your app:** add one step at the end of your CI/CD pipeline that calls NerdGraph's
+`changeTrackingCreateDeployment` with:
+- the APM app's entity GUID;
+- a version;
+- optionally the commit, changelog, a deep link and the user.
+
+New Relic's GitHub Action, Azure DevOps task and CLI (`newrelic changeTracking create`) wrap the same call. That
+call is the whole integration; no app code changes.
+
+**In this demo:** there's no real pipeline, so the app records the markers itself
+(`src/SecureDocs.Shared/ChangeMarkers.cs`). Every Fault Control switch records a release on the app whose code it
+changes, as follows:
+- **Turning a switch on** records an upbeat release note, for example *"Optimized query…"*.
+- **Turning it off** records the matching fix, for example *"Fixing query slowness…"*.
+- **Each marker's changelog and attributes** (`simulated: true`) say it was simulated.
+
+This needs a User API key in the app settings (`NewRelic__UserApiKey`, plus `NewRelic__AccountId`). In a real
+setup, that key would live in the pipeline, not in the app.
+
+---
+
 ## Repeating it for your own app
 
 1. **Day 1, no code:** agent + app settings (step 1), browser (step 2) and database integration (step 5). You get
@@ -270,6 +297,7 @@ Each is a "good events / valid events" pair of NRQL filters, on data you already
    add one attribute or event call for each (steps 3–4).
 3. **Turn the data into outcomes:** synthetics for your critical journeys (step 6), then alerts, dashboards, Pathpoint
    and service levels on top (steps 7–10).
+4. **Add a deployment marker step to your pipeline** (step 11), so every incident starts with "what changed?".
 
 ## Being upfront about what took real work
 - **Business context** needs knowledge of your domain: someone has to decide which moments and attributes matter.
